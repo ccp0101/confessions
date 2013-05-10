@@ -176,6 +176,7 @@ class RenRen:
             result = json.loads(r.text, strict=False)
         except Exception, e:
             print 'error', e
+            raise e
             result = []
         return result
 

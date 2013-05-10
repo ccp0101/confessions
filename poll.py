@@ -49,41 +49,45 @@ if __name__ == '__main__':
     while True:
         notifications = renren.getNotifications()
         for notification in notifications:
-            print "Type:", notification["type"]
-            if notification["type"] == 14:  # 私信
-                if u"MIT表白墙" not in notification['from_name']:
-                    notify_id = notification['notify_id']
+            notify_id = notification['notify_id']
+            if db.notifications.find({"notify_id": notify_id}).count():
+                continue
+            else:
+                db.notifications.insert(notification)
+                print "Type:", notification["type"]
+                if notification["type"] == 14:  # 私信
+                    if u"MIT表白墙" not in notification['from_name']:
+                        message = notification["msg_context"].strip()
+                        print (u"From: %s" % notification["from_name"]).encode("utf8")
+                        print (unicode(message) + "\n").encode("utf8")
 
-                    message = notification["msg_context"].strip()
-                    print (u"From: %s" % notification["from_name"]).encode("utf8")
-                    print (unicode(message) + "\n").encode("utf8")
+                        if message.startswith(u"回复MIT表白墙:"):
+                            message = message.replace(u"回复MIT表白墙:", "", 1)
 
-                    if message.startswith(u"回复MIT表白墙:"):
-                        message = message.replace(u"回复MIT表白墙:", "", 1)
-
-                    if len(message) < 6:
-                        print renren.addGossip({
-                            'owner_id': notification['owner'],
-                            'author_id': notification['from'],
-                            'message': u'"%s"太短了' % message
-                            })
-
-                    else:
-                        db.confessions.insert({
-                                "from_name": notification["from_name"],
-                                "from": notification["from"],
-                                "owner": notification['owner'],
-                                "received_at": datetime.utcnow(),
-                                "message": message,
-                                "published": False,
-                                "status": None
-                            })
-                        reply = (u'已经收录以下留言，审核后会发布于MIT表白墙，祝贺表白成功："%s"' % message).encode("utf8")
-                        print renren.addGossip({
-                            'owner_id': notification['owner'],
-                            'author_id': notification['from'],
-                            'message': reply
-                            })
-                        print (reply + "\n").encode("utf8")
-            renren.removeNotification(notify_id)
+                        if len(message) < 6:
+                            print "addGossip:", renren.addGossip({
+                                'owner_id': notification['owner'],
+                                'author_id': notification['from'],
+                                'message': u'"%s"太短了' % message
+                                })
+                            # if r["code"] == 4:  # 要求验证码
+                        else:
+                            db.confessions.insert({
+                                    "notify_id": notify_id,
+                                    "from_name": notification["from_name"],
+                                    "from": notification["from"],
+                                    "owner": notification['owner'],
+                                    "received_at": datetime.utcnow(),
+                                    "message": message,
+                                    "published": False,
+                                    "status": None
+                                })
+                            reply = (u'已经收录以下留言，审核后会发布于MIT表白墙，祝贺表白成功："%s"' % message).encode("utf8")
+                            print "addGossip:", renren.addGossip({
+                                'owner_id': notification['owner'],
+                                'author_id': notification['from'],
+                                'message': reply
+                                })
+                            print (reply + "\n").encode("utf8")
+                print "removeNotification:", renren.removeNotification(notify_id)
         time.sleep(0.2)
