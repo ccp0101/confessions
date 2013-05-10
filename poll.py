@@ -47,7 +47,7 @@ if __name__ == '__main__':
     info = renren.getUserInfo()
     cachedGossips = []
 
-    while True:
+    for i in range(20):
         notifications = renren.getNotifications()
 
         notif_gossips = filter(lambda n: n["type"] == 14, notifications)
