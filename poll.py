@@ -45,50 +45,61 @@ if __name__ == '__main__':
     renren.login(os.environ["RENREN_USERNAME"], os.environ["RENREN_PASSWORD"])
     renren.switchAccount("2020814145")
     info = renren.getUserInfo()
+    cachedReadNotifications = []
 
     while True:
         notifications = renren.getNotifications()
-        print "getNotifications", notifications
-        for notification in notifications:
-            notify_id = notification['notify_id']
-            if db.notifications.find({"notify_id": notify_id}).count():
-                continue
-            else:
-                db.notifications.insert(notification)
-                print "Type:", notification["type"]
-                if notification["type"] == 14:  # 私信
-                    if u"MIT表白墙" not in notification['from_name']:
-                        message = notification["msg_context"].strip()
-                        print (u"From: %s" % notification["from_name"]).encode("utf8")
-                        print (unicode(message) + "\n").encode("utf8")
+        notifications = filter(lambda n: n["notify_id"] not in cachedReadNotifications, notifications)
 
+        notif_gossips = filter(lambda n: n["type"] == 14, notifications)
+        non_gossips = filter(lambda n: n["type"] != 14, notifications)
+
+        print "Non-Gossips:"
+        print non_gossips, "\n"
+
+        for n in non_gossips:
+            print "removeNotification(%s):" % str(notify_id), renren.removeNotification(notify_id, "601726248"), "\n"
+
+        from_users = list(set(map(lambda n: n["from"], notif_gossips)))
+        print "Unique from_users: ", from_users
+
+        for from_user in from_users:
+            gossips = renren.getGossips(from_user)
+            print "getGossips(%s):" % from_user, gossips, "\n"
+
+            for gossip in gossips:
+                if db.gossips.find({"id": gossip["id"]}).count() == 0:
+                    if str(gossip["guestId"]) == str(from_user):
+                        message = gossip["body"]
                         if message.startswith(u"回复MIT表白墙:"):
                             message = message.replace(u"回复MIT表白墙:", "", 1)
 
-                        if len(message) < 6:
-                            print "addGossip:", renren.addGossip({
-                                'owner_id': notification['owner'],
-                                'author_id': notification['from'],
-                                'message': u'"%s"太短了' % message
-                                })
-                            # if r["code"] == 4:  # 要求验证码
-                        else:
-                            db.confessions.insert({
-                                    "notify_id": notify_id,
-                                    "from_name": notification["from_name"],
-                                    "from": notification["from"],
-                                    "owner": notification['owner'],
-                                    "received_at": datetime.utcnow(),
-                                    "message": message,
-                                    "published": False,
-                                    "status": None
-                                })
-                            reply = u'已经收录以下留言，审核后会发布于MIT表白墙，祝贺表白成功："%s"' % message
-                            print "addGossip:", renren.addGossip({
-                                'owner_id': notification['owner'],
-                                'author_id': notification['from'],
-                                'message': reply
-                                })
-                            print (reply + u"\n").encode("utf8")
-            print "removeNotification:", renren.removeNotification(notify_id, "601726248")
-        time.sleep(0.2)
+                        conf = {
+                                "from_name": gossip["guestName"],
+                                "from": gossip["guestId"],
+                                "owner": gossip["owner"],
+                                "received_at": datetime.utcnow(),
+                                "message": message,
+                                "published": False,
+                                "status": None
+                            }
+                        db.confessions.insert(conf)
+                        print "Added Confession: ", conf
+
+                        reply = u'已经收录以下留言，审核后会发布于MIT表白墙，祝贺表白成功："%s"' % message
+                        print "addGossip:", renren.addGossip({
+                            'owner_id': gossip["owner"],
+                            'author_id': gossip["guestId"],
+                            'message': reply
+                            })
+                        print "Reply: ", (reply + u"\n").encode("utf8")
+                    db.gossips.insert(gossip)
+
+            notifs = filter(lambda n: n["from"] == from_user, notif_gossips)
+            notif_ids = map(lambda n: n["notify_id"], notifs)
+            renren.removeNotificationMultiple(notif_ids, "601726248", 14)
+            for n in notifs:
+                renren.removeNotification(n["notify_id"])
+                cachedReadNotifications.append(n["notify_id"])
+
+        time.sleep(2.0)

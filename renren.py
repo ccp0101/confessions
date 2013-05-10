@@ -185,7 +185,14 @@ class RenRen:
         url = 'http://notify.renren.com/remove.notify?nl=' + str(notify_id)
         if uid:
             url += "&uid=" + uid
-        return self.get(url)
+        return self.get(url).text
+
+    def removeNotificationMultiple(self, notify_ids, uid, type):
+        joined = "-".join([str(x) for x in notify_ids])
+        url = "http://notify.renren.com/rmessage/process?nl=%s&uid=%s&type=%s" % (
+            joined, str(uid), str(type))
+        print url
+        return self.get(url).text
 
     def getDoings(self, uid, page=0):
         url = 'http://status.renren.com/GetSomeomeDoingList.do?userId=%s&curpage=%d' % (str(uid), page)
@@ -397,3 +404,24 @@ class RenRen:
         r = self.post(url)
         r.raise_for_status()
         return r.json()
+
+    def getGossips(self, from_user):
+        url = "http://gossip.renren.com/getconversation.do"
+        payloads = {
+            "guest": from_user,
+            "curpage":0,
+            "destpage":0,
+            "hostBeginId": "",
+            "hostEndId": "",
+            "guestBeginId": "",
+            "guestEndId": "",
+            "page": "",
+            "id": from_user,
+            "resource":0,
+            "search":0,
+            "boundary":0,
+            "gossipCount":0,
+        }
+        r = self.post(url, data=payloads)
+        r.raise_for_status()
+        return r.json()["array"]
