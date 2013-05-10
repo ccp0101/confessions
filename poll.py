@@ -55,8 +55,8 @@ if __name__ == '__main__':
                     notify_id = notification['notify_id']
 
                     message = notification["msg_context"].strip()
-                    print "From: %s" % notification["from_name"]
-                    print message + "\n"
+                    print (u"From: %s" % notification["from_name"]).encode("utf8")
+                    print (unicode(message) + "\n").encode("utf8")
 
                     if message.startswith(u"回复MIT表白墙:"):
                         message = message.replace(u"回复MIT表白墙:", "", 1)
@@ -84,6 +84,6 @@ if __name__ == '__main__':
                             'author_id': notification['from'],
                             'message': reply
                             })
-                        print reply + "\n"
+                        print (reply + "\n").encode("utf8")
             renren.removeNotification(notify_id)
         time.sleep(0.2)
