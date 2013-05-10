@@ -62,7 +62,7 @@ if __name__ == '__main__':
                         message = message.replace(u"回复MIT表白墙:", "", 1)
 
                     if len(message) < 6:
-                        renren.addGossip({
+                        print renren.addGossip({
                             'owner_id': notification['owner'],
                             'author_id': notification['from'],
                             'message': u'"%s"太短了' % message
@@ -79,7 +79,7 @@ if __name__ == '__main__':
                                 "status": None
                             })
                         reply = (u'已经收录以下留言，审核后会发布于MIT表白墙，祝贺表白成功："%s"' % message).encode("utf8")
-                        renren.addGossip({
+                        print renren.addGossip({
                             'owner_id': notification['owner'],
                             'author_id': notification['from'],
                             'message': reply

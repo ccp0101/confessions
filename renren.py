@@ -221,15 +221,14 @@ class RenRen:
     def sendComment(self, url, payloads):
         for i in range(10):  # try 3 times
             r = self.post(url, payloads)
-            if r.status_code == 500:
-                time.sleep(2)
-                continue
-            else:
+            if r.status_code != 500:
                 break
+            time.sleep(2)
         r.raise_for_status()
         try:
             return r.json()
         except:
+            print r.text.encode("utf8")
             return { 'code': 0 }
 
     # 评论状态
