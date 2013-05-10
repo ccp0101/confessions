@@ -47,6 +47,36 @@ if __name__ == '__main__':
     info = renren.getUserInfo()
     cachedGossips = []
 
+    def handleGossips(gossips):
+        for gossip in gossips:
+            if db.gossips.find({"id": gossip["id"]}).count() == 0:
+                if str(gossip["guestId"]) == str(from_user):
+                    message = gossip["filterOriginalBody"]
+                    if message.startswith(u"回复MIT表白墙:"):
+                        message = message.replace(u"回复MIT表白墙:", "", 1)
+
+                    conf = {
+                            "from_name": gossip["guestName"],
+                            "from": gossip["guestId"],
+                            "owner": gossip["owner"],
+                            "received_at": datetime.utcnow(),
+                            "message": message,
+                            "published": False,
+                            "status": None
+                        }
+                    db.confessions.insert(conf)
+                    print "Added Confession: ", conf
+
+                    reply = u'已经收录以下留言，审核后会发布于MIT表白墙，祝贺表白成功："%s"' % message
+                    print "addGossip:", renren.addGossip({
+                        'owner_id': gossip["owner"],
+                        'author_id': gossip["guestId"],
+                        'message': reply
+                        })
+                    print "Reply: ", (reply + u"\n").encode("utf8")
+                db.gossips.insert(gossip)
+            cachedGossips.append(gossip["id"])
+
     for i in range(20):
         notifications = renren.getNotifications()
 
@@ -56,9 +86,6 @@ if __name__ == '__main__':
         print "Non-Gossips:"
         print non_gossips, "\n"
 
-        for n in non_gossips:
-            print "removeNotification(%s):" % str(notify_id), renren.removeNotification(notify_id, "601726248"), "\n"
-
         from_users = list(set(map(lambda n: n["from"], notif_gossips)))
         print "Unique from_users: ", from_users
 
@@ -66,40 +93,20 @@ if __name__ == '__main__':
             gossips = renren.getGossips(from_user)
             gossips = filter(lambda g: g["id"] not in cachedGossips, gossips)
             print "getGossips(%s):" % from_user, gossips, "\n"
-
-            for gossip in gossips:
-                if db.gossips.find({"id": gossip["id"]}).count() == 0:
-                    if str(gossip["guestId"]) == str(from_user):
-                        message = gossip["filterOriginalBody"]
-                        if message.startswith(u"回复MIT表白墙:"):
-                            message = message.replace(u"回复MIT表白墙:", "", 1)
-
-                        conf = {
-                                "from_name": gossip["guestName"],
-                                "from": gossip["guestId"],
-                                "owner": gossip["owner"],
-                                "received_at": datetime.utcnow(),
-                                "message": message,
-                                "published": False,
-                                "status": None
-                            }
-                        db.confessions.insert(conf)
-                        print "Added Confession: ", conf
-
-                        reply = u'已经收录以下留言，审核后会发布于MIT表白墙，祝贺表白成功："%s"' % message
-                        print "addGossip:", renren.addGossip({
-                            'owner_id': gossip["owner"],
-                            'author_id': gossip["guestId"],
-                            'message': reply
-                            })
-                        print "Reply: ", (reply + u"\n").encode("utf8")
-                    db.gossips.insert(gossip)
-                cachedGossips.append(gossip["id"])
+            handleGossips(gossips)
 
             notifs = filter(lambda n: n["from"] == from_user, notif_gossips)
             notif_ids = map(lambda n: n["notify_id"], notifs)
             renren.removeNotificationMultiple(notif_ids, "601726248", 14)
             for n in notifs:
                 renren.removeNotification(n["notify_id"])
+    
+        from_users = renren.getHTMLGossipsUsers()
+        print "getHTMLGossipsUsers: ", from_users
+        for from_user in from_users:
+            gossips = renren.getGossips(from_user)
+            gossips = filter(lambda g: g["id"] not in cachedGossips, gossips)
+            print "getHTMLGossipsUsers(%s):" % from_user, gossips, "\n"
+            handleGossips(gossips)
 
         time.sleep(2.0)

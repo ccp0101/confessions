@@ -425,3 +425,9 @@ class RenRen:
         r = self.post(url, data=payloads)
         r.raise_for_status()
         return r.json()["array"]
+
+    def getHTMLGossipsUsers(self):
+        url = "http://notify.renren.com/rmessage/rmessage-apply.html?view=16&page=1&bigtype=1"
+        r = self.get(url)
+        r.raise_for_status()
+        return re.findall(r"getgossiplist\.do\?id=[0-9]{9}&f=([0-9]{9})", r.text)
