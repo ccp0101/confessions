@@ -70,7 +70,7 @@ if __name__ == '__main__':
             for gossip in gossips:
                 if db.gossips.find({"id": gossip["id"]}).count() == 0:
                     if str(gossip["guestId"]) == str(from_user):
-                        message = gossip["body"]
+                        message = gossip["filterOriginalBody"]
                         if message.startswith(u"回复MIT表白墙:"):
                             message = message.replace(u"回复MIT表白墙:", "", 1)
 
