@@ -182,7 +182,7 @@ class RenRen:
 
     def removeNotification(self, notify_id, uid=""):
         # http://notify.renren.com/remove.notify?nl=42776992424&uid=601726248
-        url = 'http://notify.renren.com/rmessage/remove?nl=' + str(notify_id)
+        url = 'http://notify.renren.com/remove.notify?nl=' + str(notify_id)
         if uid:
             url += "&uid=" + uid
         return self.get(url)

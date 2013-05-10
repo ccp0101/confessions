@@ -83,12 +83,12 @@ if __name__ == '__main__':
                                     "published": False,
                                     "status": None
                                 })
-                            reply = (u'已经收录以下留言，审核后会发布于MIT表白墙，祝贺表白成功："%s"' % message).encode("utf8")
+                            reply = u'已经收录以下留言，审核后会发布于MIT表白墙，祝贺表白成功："%s"' % message
                             print "addGossip:", renren.addGossip({
                                 'owner_id': notification['owner'],
                                 'author_id': notification['from'],
                                 'message': reply
                                 })
-                            print (reply + "\n").encode("utf8")
-                print "removeNotification:", renren.removeNotification(notify_id, "601726248")
+                            print (reply + u"\n").encode("utf8")
+            print "removeNotification:", renren.removeNotification(notify_id, "601726248")
         time.sleep(0.2)
