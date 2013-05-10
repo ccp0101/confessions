@@ -50,6 +50,7 @@ if __name__ == '__main__':
         notifications = renren.getNotifications()
         for notification in notifications:
             notify_id = notification['notify_id']
+            print notification
             if db.notifications.find({"notify_id": notify_id}).count():
                 continue
             else:
@@ -89,5 +90,5 @@ if __name__ == '__main__':
                                 'message': reply
                                 })
                             print (reply + "\n").encode("utf8")
-                print "removeNotification:", renren.removeNotification(notify_id)
+                print "removeNotification:", renren.removeNotification(notify_id, "601726248")
         time.sleep(0.2)

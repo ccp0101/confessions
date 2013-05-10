@@ -180,8 +180,12 @@ class RenRen:
             result = []
         return result
 
-    def removeNotification(self, notify_id):
-        self.get('http://notify.renren.com/rmessage/remove?nl=' + str(notify_id))
+    def removeNotification(self, notify_id, uid=""):
+        # http://notify.renren.com/remove.notify?nl=42776992424&uid=601726248
+        url = 'http://notify.renren.com/rmessage/remove?nl=' + str(notify_id)
+        if uid:
+            url += "&uid=" + uid
+        return self.get(url)
 
     def getDoings(self, uid, page=0):
         url = 'http://status.renren.com/GetSomeomeDoingList.do?userId=%s&curpage=%d' % (str(uid), page)
