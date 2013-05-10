@@ -64,4 +64,4 @@ def undo():
     else:
         abort(403)
 
-app.run("0.0.0.0", 8012)
+app.run("0.0.0.0", 8012, threaded=True)
