@@ -45,11 +45,10 @@ if __name__ == '__main__':
     renren.login(os.environ["RENREN_USERNAME"], os.environ["RENREN_PASSWORD"])
     renren.switchAccount("2020814145")
     info = renren.getUserInfo()
-    cachedReadNotifications = []
+    cachedGossips = []
 
     while True:
         notifications = renren.getNotifications()
-        notifications = filter(lambda n: n["notify_id"] not in cachedReadNotifications, notifications)
 
         notif_gossips = filter(lambda n: n["type"] == 14, notifications)
         non_gossips = filter(lambda n: n["type"] != 14, notifications)
@@ -65,6 +64,7 @@ if __name__ == '__main__':
 
         for from_user in from_users:
             gossips = renren.getGossips(from_user)
+            gossips = filter(lambda g: g["id"] not in cachedGossips, gossips)
             print "getGossips(%s):" % from_user, gossips, "\n"
 
             for gossip in gossips:
@@ -94,12 +94,12 @@ if __name__ == '__main__':
                             })
                         print "Reply: ", (reply + u"\n").encode("utf8")
                     db.gossips.insert(gossip)
+                cachedGossips.append(gossip["id"])
 
             notifs = filter(lambda n: n["from"] == from_user, notif_gossips)
             notif_ids = map(lambda n: n["notify_id"], notifs)
             renren.removeNotificationMultiple(notif_ids, "601726248", 14)
             for n in notifs:
                 renren.removeNotification(n["notify_id"])
-                cachedReadNotifications.append(n["notify_id"])
 
         time.sleep(2.0)
