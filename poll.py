@@ -48,7 +48,7 @@ if __name__ == '__main__':
 
     while True:
         notifications = renren.getNotifications()
-        print "getNotifications", getNotifications
+        print "getNotifications", notifications
         for notification in notifications:
             notify_id = notification['notify_id']
             if db.notifications.find({"notify_id": notify_id}).count():
