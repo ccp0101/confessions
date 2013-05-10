@@ -8,6 +8,7 @@ import re
 import random
 from pyquery import PyQuery
 import os
+from BeautifulSoup import BeautifulSoup
 
 # 分段加密
 CHUNK_SIZE = 30
@@ -431,3 +432,26 @@ class RenRen:
         r = self.get(url)
         r.raise_for_status()
         return re.findall(r"getgossiplist\.do\?id=[0-9]{9}&f=([0-9]{9})", r.text)
+
+    def getMailIDs(self, uid):
+        url = "http://page.renren.com/%s/msg/listMsg" % (str(uid))
+        r = self.get(url)
+        r.raise_for_status()
+        ids = re.findall(r'id="thread_([0-9]{9,11})"', r.text)
+        return list(set(ids))
+
+    def getMail(self, uid, id):
+        url = "http://page.renren.com/%s/msg/read?id=%s" % (str(uid), str(id))
+        r = self.get(url)
+        r.raise_for_status()
+        soup = BeautifulSoup(r.text)
+        body = ''.join(soup.findAll('div', {"class" : "text"})[0].findAll(text=True))
+        author_info = soup.findAll('div', {"class": re.compile(r".*\bauthor_info\b.*")})[0]
+        author_id = re.findall(r"id=([0-9]{9})", str(author_info))[0]
+        author_name = author_info.findAll("a")[0].text
+        return {
+            "id": id,
+            "body": body,
+            "author_id": author_id,
+            "author_name": author_name
+        }

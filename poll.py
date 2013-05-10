@@ -109,4 +109,19 @@ if __name__ == '__main__':
             print "getHTMLGossipsUsers(%s):" % from_user, gossips, "\n"
             handleGossips(gossips)
 
+        for mail_id in renren.getMailIDs("601726248"):
+            if db.mails.find({"id": mail_id}).count() == 0:
+                mail = renren.getMail("601726248", mail_id)
+                conf = {
+                        "from_name": mail["author_name"],
+                        "from": mail["author_id"],
+                        "owner": "601726248",
+                        "received_at": datetime.utcnow(),
+                        "message": mail["body"],
+                        "published": False,
+                        "status": None
+                    }
+                db.confessions.insert(conf)
+                print "Added Confession: ", conf
+                db.mails.insert(mail)
         time.sleep(2.0)
