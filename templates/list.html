@@ -29,6 +29,14 @@
         {% endfor %}
       </tbody>
     </table>
+    <ul class="pager">
+      {% if pager.older %}
+        <li class="previous"><a href="{{ pager.newer }}" class="older">← Older</a></li>
+      {% endif %}
+      {% if pager.newer %}
+        <li class="next"><a href="{{ pager.older }}" class="newer">Newer →</a></li>
+      {% endif %}
+    </div>
   </div>
 </div>
 

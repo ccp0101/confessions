@@ -4,6 +4,7 @@ from db import MONGO_URI
 import os
 from renren import RenRen
 from bson import ObjectId
+import pymongo
 
 app = Flask(__name__)
 app.config["MONGO_URI"] = MONGO_URI
@@ -27,8 +28,15 @@ def getBot():
 def index():
     page = int(request.args.get('page', 1))
     limit = 50
-    confessions = mongo.db.confessions.find().limit(limit).skip((page - 1) * limit)
-    return render_template("list.html", confessions=confessions)
+    confessions = mongo.db.confessions.find().sort("received_at", pymongo.DESCENDING
+                                            ).limit(limit).skip((page - 1) * limit)
+    count = mongo.db.confessions.count()
+    pager = {}
+    if count > page * limit:
+        pager["newer"] = "/?page=%i" % page + 1
+    if page > 1:
+        pager["older"] = "/?page=%i" % page - 1
+    return render_template("list.html", confessions=confessions, pager=pager)
 
 @app.route('/publish', methods=['POST'])
 def publish():
