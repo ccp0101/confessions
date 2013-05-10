@@ -49,39 +49,41 @@ if __name__ == '__main__':
     while True:
         notifications = renren.getNotifications()
         for notification in notifications:
-            if u"MIT表白墙" not in notification['from_name']:
-                notify_id = notification['notify_id']
+            print "Type:", notification["type"]
+            if notification["type"] == 14:  # 私信
+                if u"MIT表白墙" not in notification['from_name']:
+                    notify_id = notification['notify_id']
 
-                message = notification["msg_context"].strip()
-                print "From: %s" % notification["from_name"]
-                print message + "\n"
+                    message = notification["msg_context"].strip()
+                    print "From: %s" % notification["from_name"]
+                    print message + "\n"
 
-                if message.startswith(u"回复MIT表白墙:"):
-                    message = message.replace(u"回复MIT表白墙:", "", 1)
+                    if message.startswith(u"回复MIT表白墙:"):
+                        message = message.replace(u"回复MIT表白墙:", "", 1)
 
-                if len(message) < 6:
-                    renren.addGossip({
-                        'owner_id': notification['owner'],
-                        'author_id': notification['from'],
-                        'message': u'"%s"太短了' % message
-                        })
+                    if len(message) < 6:
+                        renren.addGossip({
+                            'owner_id': notification['owner'],
+                            'author_id': notification['from'],
+                            'message': u'"%s"太短了' % message
+                            })
 
-                else:
-                    db.confessions.insert({
-                            "from_name": notification["from_name"],
-                            "from": notification["from"],
-                            "owner": notification['owner'],
-                            "received_at": datetime.utcnow(),
-                            "message": message,
-                            "published": False,
-                            "status": None
-                        })
-                    reply = (u'已经收录以下留言，审核后会发布于MIT表白墙，祝贺表白成功："%s"' % message).encode("utf8")
-                    renren.addGossip({
-                        'owner_id': notification['owner'],
-                        'author_id': notification['from'],
-                        'message': reply
-                        })
-                    print reply + "\n"
-                renren.removeNotification(notify_id)
+                    else:
+                        db.confessions.insert({
+                                "from_name": notification["from_name"],
+                                "from": notification["from"],
+                                "owner": notification['owner'],
+                                "received_at": datetime.utcnow(),
+                                "message": message,
+                                "published": False,
+                                "status": None
+                            })
+                        reply = (u'已经收录以下留言，审核后会发布于MIT表白墙，祝贺表白成功："%s"' % message).encode("utf8")
+                        renren.addGossip({
+                            'owner_id': notification['owner'],
+                            'author_id': notification['from'],
+                            'message': reply
+                            })
+                        print reply + "\n"
+            renren.removeNotification(notify_id)
         time.sleep(0.2)
