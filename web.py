@@ -22,6 +22,7 @@ if not app.debug:
 def getBot():
     renren = RenRen()
     renren.login(os.environ["RENREN_USERNAME"], os.environ["RENREN_PASSWORD"])
+    renren.switchAccount("2020816463")
     return renren
 
 @app.route('/')

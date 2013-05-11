@@ -43,7 +43,7 @@ db = getdb()
 if __name__ == '__main__':
     renren = RenRen()
     renren.login(os.environ["RENREN_USERNAME"], os.environ["RENREN_PASSWORD"])
-    renren.switchAccount("2020814145")
+    renren.switchAccount("2020816463")
     # info = renren.getUserInfo()
     cachedGossips = []
 
