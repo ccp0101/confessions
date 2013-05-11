@@ -45,19 +45,19 @@ def encryptString(e, m, s):
     return ' '.join(result)[:-1]  # 去掉最后的'L'
 
 
-import logging
+# import logging
 
-# these two lines enable debugging at httplib level (requests->urllib3->httplib)
-# you will see the REQUEST, including HEADERS and DATA, and RESPONSE with HEADERS but without DATA.
-# the only thing missing will be the response.body which is not logged.
-import httplib
-httplib.HTTPConnection.debuglevel = 1
+# # these two lines enable debugging at httplib level (requests->urllib3->httplib)
+# # you will see the REQUEST, including HEADERS and DATA, and RESPONSE with HEADERS but without DATA.
+# # the only thing missing will be the response.body which is not logged.
+# import httplib
+# httplib.HTTPConnection.debuglevel = 1
 
-logging.basicConfig() # you need to initialize logging, otherwise you will not see anything from requests
-logging.getLogger().setLevel(logging.DEBUG)
-requests_log = logging.getLogger("requests.packages.urllib3")
-requests_log.setLevel(logging.DEBUG)
-requests_log.propagate = True
+# logging.basicConfig() # you need to initialize logging, otherwise you will not see anything from requests
+# logging.getLogger().setLevel(logging.DEBUG)
+# requests_log = logging.getLogger("requests.packages.urllib3")
+# requests_log.setLevel(logging.DEBUG)
+# requests_log.propagate = True
 
 class RenRen:
     def __init__(self, email=None, pwd=None):
@@ -84,7 +84,12 @@ class RenRen:
             pickle.dump(cookie_dict, fp)
 
     def login(self, email, pwd):
-        key = self.getEncryptKey()
+        # key = self.getEncryptKey()
+
+        self.session.proxies = {
+            "http": "http://184.82.229.13:4928",
+            "https": "http://184.82.229.13:4928",
+        }
 
         if self.getShowCaptcha(email) == 1:
             fn = 'icode.%s.jpg' % os.getpid()
@@ -111,6 +116,7 @@ class RenRen:
         url = 'http://www.renren.com/ajaxLogin/login?1=1&uniqueTimestamp=%f' % random.random()
         r = self.post(url, data)
         result = r.json()
+        self.session.proxies = {}
         if result['code']:
             print 'login successfully'
             self.email = email
@@ -129,7 +135,10 @@ class RenRen:
             print "get icode failure"
 
     def getShowCaptcha(self, email=None):
+        print "Determining if Captcha is needed."
         r = self.post('http://www.renren.com/ajax/ShowCaptcha', data={'email': email})
+        print r.status_code
+        print r.text
         return r.json()
 
     def getEncryptKey(self):

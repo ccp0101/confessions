@@ -124,4 +124,4 @@ if __name__ == '__main__':
                 db.confessions.insert(conf)
                 print "Added Confession: ", conf
                 db.mails.insert(mail)
-        time.sleep(2.0)
+        time.sleep(4.0)
