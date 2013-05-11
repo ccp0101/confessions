@@ -6,9 +6,10 @@ import requests
 import json
 import re
 import random
-from pyquery import PyQuery
+# from pyquery import PyQuery
 import os
 from BeautifulSoup import BeautifulSoup
+import pickle
 
 # 分段加密
 CHUNK_SIZE = 30
@@ -44,46 +45,43 @@ def encryptString(e, m, s):
     return ' '.join(result)[:-1]  # 去掉最后的'L'
 
 
-# import logging
+import logging
 
-# # these two lines enable debugging at httplib level (requests->urllib3->httplib)
-# # you will see the REQUEST, including HEADERS and DATA, and RESPONSE with HEADERS but without DATA.
-# # the only thing missing will be the response.body which is not logged.
-# import httplib
-# httplib.HTTPConnection.debuglevel = 1
+# these two lines enable debugging at httplib level (requests->urllib3->httplib)
+# you will see the REQUEST, including HEADERS and DATA, and RESPONSE with HEADERS but without DATA.
+# the only thing missing will be the response.body which is not logged.
+import httplib
+httplib.HTTPConnection.debuglevel = 1
 
-# logging.basicConfig() # you need to initialize logging, otherwise you will not see anything from requests
-# logging.getLogger().setLevel(logging.DEBUG)
-# requests_log = logging.getLogger("requests.packages.urllib3")
-# requests_log.setLevel(logging.DEBUG)
-# requests_log.propagate = True
+logging.basicConfig() # you need to initialize logging, otherwise you will not see anything from requests
+logging.getLogger().setLevel(logging.DEBUG)
+requests_log = logging.getLogger("requests.packages.urllib3")
+requests_log.setLevel(logging.DEBUG)
+requests_log.propagate = True
 
 class RenRen:
-
     def __init__(self, email=None, pwd=None):
         self.session = requests.Session()
+
         self.token = {}
 
         if email and pwd:
             self.login(email, pwd)
 
-    def _loginByCookie(self, cookie_str):
-        cookie_dict = dict([v.split('=', 1) for v in cookie_str.strip().split(';')])
+    def loginByCookie(self, cookie_path=None):
+        if cookie_path is None:
+            cookie_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "cookie.jar")
+        with open(cookie_path) as fp:
+            cookie_dict = pickle.load(fp)
         self.session.cookies = requests.utils.cookiejar_from_dict(cookie_dict)
-
         self.getToken()
 
-    def loginByCookie(self, cookie_path):
-        with open(cookie_path) as fp:
-            cookie_str = fp.read()
-
-        self._loginByCookie(cookie_str)
-
-    def saveCookie(self, cookie_path):
+    def saveCookie(self, cookie_path=None):
+        if cookie_path is None:
+            cookie_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "cookie.jar")
         with open(cookie_path, 'w') as fp:
             cookie_dict = requests.utils.dict_from_cookiejar(self.session.cookies)
-            cookie_str = '; '.join([k + '=' + v for k, v in cookie_dict.iteritems()])
-            fp.write(cookie_str)
+            pickle.dump(cookie_dict, fp)
 
     def login(self, email, pwd):
         key = self.getEncryptKey()

@@ -1,5 +1,4 @@
 Flask
 Flask-Pymongo
 requests
-pyquery
 BeautifulSoup
