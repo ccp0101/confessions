@@ -16,7 +16,7 @@
         {% for item in confessions %}
           <tr data-id="{{ item._id }}">
             <td class="datetime" data-source="{{ item.received_at }}"  style="min-width: 220px;"></td>
-            <td class="message">{{ item.message }}</td>
+            <td class="message">{% autoescape off %}{{ item.message }}{% endautoescape %}</td>
             <td style="min-width: 60px;">
               {% if item.published %}
                 <button class="btn btn-danger btn-undo-publish" type="button">撤销</button>
