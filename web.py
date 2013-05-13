@@ -6,7 +6,10 @@ from renren import RenRen
 from bson import ObjectId
 import pymongo
 
-app = Flask(__name__)
+tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
+
+
+app = Flask(__name__, template_folder=tmpl_dir)
 app.config["MONGO_URI"] = MONGO_URI
 mongo = PyMongo(app)
 
