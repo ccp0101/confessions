@@ -114,3 +114,30 @@ $ ->
         alert "撤销失败！"
       complete: ->
         document.location.reload()
+
+  $(".btn-publish-new").click (e) ->
+    message = $(".modal-publish .message").val()
+    id = $(".modal-publish").data("id")
+    $.ajax
+      method: "POST", 
+      url: "/publish"
+      data:
+        message: message, id: id
+      beforeSend: ->
+        $.blockUI css:
+          border: 'none'
+          padding: '15px'
+          backgroundColor: '#000'
+          'border-radius': '10px'
+          '-webkit-border-radius': '10px'
+          '-moz-border-radius': '10px'
+          opacity: .5
+          "z-index": 100000
+          color: '#fff'
+      success: ->
+        alert "发布成功！"
+      error: ->
+        alert "发布失败！"
+      complete: ->
+        document.location.reload()
+    
