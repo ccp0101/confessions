@@ -37,9 +37,9 @@ def index():
     count = mongo.db.confessions.count()
     pager = {}
     if count > page * limit:
-        pager["newer"] = "/?page=%i" % page + 1
+        pager["newer"] = "/?page=%i" % (page + 1)
     if page > 1:
-        pager["older"] = "/?page=%i" % page - 1
+        pager["older"] = "/?page=%i" % (page - 1)
     return render_template("list.html", confessions=confessions, pager=pager)
 
 @app.route('/publish', methods=['POST'])
